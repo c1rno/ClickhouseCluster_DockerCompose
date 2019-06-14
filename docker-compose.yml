@@ -1,6 +1,6 @@
 version: '2'
 
-networks: 
+networks:
   main:
 
 services:
@@ -10,14 +10,13 @@ services:
             - "9001:9000"
         volumes:
             - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
-        networks: 
-            - main  
-        depends_on: 
+        networks:
+            - main
+        depends_on:
           - clickhouse1
           - clickhouse2
           - clickhouse3
-    
-    
+
     zoo1:
         image: zookeeper:latest
         expose:
@@ -39,8 +38,8 @@ services:
         environment:
             ZOO_MY_ID: "2"
             ZOO_SERVERS: server.1=zoo1:2888:3888 server.2=0.0.0.0:2888:3888 server.3=zoo3:2888:3888
-        networks: 
-            - main  
+        networks:
+            - main
 
     zoo3:
         image: zookeeper:latest
@@ -51,8 +50,8 @@ services:
         environment:
             ZOO_MY_ID: "3"
             ZOO_SERVERS: server.1=zoo1:2888:3888 server.2=zoo2:2888:3888 server.3=0.0.0.0:2888:3888
-        networks: 
-            - main  
+        networks:
+            - main
 
     clickhouse1:
         image: yandex/clickhouse-server
@@ -67,9 +66,9 @@ services:
           - zoo3
         volumes:
           - ./config_1.xml:/etc/clickhouse-server/config.xml
-        networks: 
-            - main  
-          
+        networks:
+            - main
+
     clickhouse2:
         image: yandex/clickhouse-server
         expose:
@@ -77,27 +76,28 @@ services:
           - "9011"
           #client port
           - "9000"
-        depends_on: 
+        depends_on:
           - zoo1
           - zoo2
           - zoo3
         volumes:
           - ./config_2.xml:/etc/clickhouse-server/config.xml
-        networks: 
-            - main  
+        networks:
+            - main
 
     clickhouse3:
         image: yandex/clickhouse-server
-        expose: 
+        expose:
           #replica sync port
           - "9012"
           #client port
           - "9000"
-        depends_on: 
+        depends_on:
           - zoo1
           - zoo2
           - zoo3
         volumes:
           - ./config_3.xml:/etc/clickhouse-server/config.xml
-        networks: 
-            - main  
+        networks:
+            - main
+
