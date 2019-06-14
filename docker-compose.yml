@@ -25,9 +25,9 @@ services:
             - "3888"
         environment:
             ZOO_MY_ID: "1"
-            ZOO_SERVERS: server.1=0.0.0.0:2888:3888 server.2=zoo2:2888:3888 server.3=zoo3:2888:3888
-        networks: 
-            - main  
+            ZOO_SERVERS: server.1=0.0.0.0:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
+        networks:
+            - main
 
     zoo2:
         image: zookeeper:latest
@@ -37,7 +37,7 @@ services:
             - "3888"
         environment:
             ZOO_MY_ID: "2"
-            ZOO_SERVERS: server.1=zoo1:2888:3888 server.2=0.0.0.0:2888:3888 server.3=zoo3:2888:3888
+            ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=0.0.0.0:2888:3888;2181 server.3=zoo3:2888:3888;2181
         networks:
             - main
 
@@ -49,7 +49,7 @@ services:
             - "3888"
         environment:
             ZOO_MY_ID: "3"
-            ZOO_SERVERS: server.1=zoo1:2888:3888 server.2=zoo2:2888:3888 server.3=0.0.0.0:2888:3888
+            ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=0.0.0.0:2888:3888;2181
         networks:
             - main
 
@@ -60,7 +60,7 @@ services:
           - "9010"
           #client port
           - "9000"
-        depends_on: 
+        depends_on:
           - zoo1
           - zoo2
           - zoo3

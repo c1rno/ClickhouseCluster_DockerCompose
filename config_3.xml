@@ -127,6 +127,10 @@
                    <host>clickhouse1</host>
                    <port>9000</port>
                </replica>
+           </shard>
+           <shard>
+               <weight>1</weight>
+               <internal_replication>false</internal_replication>
                <replica>
                    <host>clickhouse2</host>
                    <port>9000</port>
@@ -136,23 +140,7 @@
                <weight>1</weight>
                <internal_replication>false</internal_replication>
                <replica>
-                   <host>clickhouse2</host>
-                   <port>9000</port>
-               </replica>
-               <replica>
                    <host>clickhouse3</host>
-                   <port>9000</port>
-               </replica>
-           </shard>
-           <shard>
-               <weight>1</weight>
-               <internal_replication>false</internal_replication>
-               <replica>
-                   <host>clickhouse3</host>
-                   <port>9000</port>
-               </replica>
-               <replica>
-                   <host>clickhouse1</host>
                    <port>9000</port>
                </replica>
            </shard>
@@ -182,10 +170,13 @@
     <!-- Substitutions for parameters of replicated tables.
           Optional. If you don't use replicated tables, you could omit that.
 
-         See https://clickhouse.yandex/reference_en.html#Creating%20replicated%20tables
-      -->
-    <macros incl="macros" optional="true" />
-
+         See https://clickhouse.yandex/docs/en/single/#creating-replicated-tables
+    -->
+    <macros>
+       <layer>03</layer>
+       <shard>03</shard>
+       <replica>clickhouse1</replica>
+    </macros>
 
     <!-- Reloading interval for embedded dictionaries, in seconds. Default: 3600. -->
     <builtin_dictionaries_reload_interval>3600</builtin_dictionaries_reload_interval>
@@ -286,6 +277,13 @@
     <resharding>
         <task_queue_path>/clickhouse/task_queue</task_queue_path>
     </resharding>
+
+    <!-- Allow to execute distributed DDL queries (CREATE, DROP, ALTER, RENAME) on cluster.
+         Works only if ZooKeeper is enabled. Comment it if such functionality isn't required. -->
+    <distributed_ddl>
+        <!-- Path in ZooKeeper to queue with DDL queries -->
+        <path>/clickhouse/task_queue/ddl</path>
+    </distributed_ddl>
 
     <!-- Settings to fine tune MergeTree tables. See documentation in source code, in MergeTreeSettings.h -->
     <!--

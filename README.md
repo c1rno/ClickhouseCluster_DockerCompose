@@ -4,13 +4,14 @@
 
 ### Просто пара полезных комманд чтобы посмотреть состояние кластера:
 
+- `clickhouse-client --host=127.0.0.1 --port=9001 --multiline`
 - `select * from system.clusters;`
 
 ## Начало работы
 
 Установите Docker Engine и Docker Compose.
 
-Выполните `docker compose up`.
+Выполните `docker compose up -d`.
 
 В результате будут подняты (в порядке запуска):
 
