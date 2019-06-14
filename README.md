@@ -1,3 +1,11 @@
+# Отличия от оригинального репо:
+
+Сделано три шарда по две реплики для того чтобы работать с [Distributed-таблицами](https://clickhouse.yandex/docs/en/operations/table_engines/distributed)
+
+### Просто пара полезных комманд чтобы посмотреть состояние кластера:
+
+- `select * from system.clusters;`
+
 ## Начало работы
 
 Установите Docker Engine и Docker Compose.
