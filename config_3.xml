@@ -8,6 +8,10 @@
         <count>10</count>
     </logger>
 
+    <!-- https://github.com/yandex/ClickHouse/issues/4947
+    -->
+    <user_files_path>/var/lib/clickhouse/user_files</user_files_path>
+    <format_schema_path>/var/lib/clickhouse/format_schema</format_schema_path>
 
     <http_port>8123</http_port>
 
