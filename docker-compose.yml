@@ -1,103 +1,130 @@
-version: '2'
+version: '3'
 
 networks:
   main:
 
 services:
-    haproxy:
-        image: haproxy
-        ports:
-            - "9001:9000"
-        volumes:
-            - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
-        networks:
-            - main
-        depends_on:
-          - clickhouse1
-          - clickhouse2
-          - clickhouse3
+  haproxy:
+    hostname: haproxy
+    image: haproxy
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+    networks:
+      - main
+    depends_on:
+      - clickhouse1
+      - clickhouse2
+      - clickhouse3
 
-    zoo1:
-        image: zookeeper:latest
-        expose:
-            - "2181"
-            - "2888"
-            - "3888"
-        environment:
-            ZOO_MY_ID: "1"
-            ZOO_SERVERS: server.1=0.0.0.0:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
-        networks:
-            - main
+  bulk:
+    hostname: bulk
+    image: nikepan/clickhouse-bulk:1.0.11
+    ports:
+      - "8124:8124"
+    networks:
+      - main
+    environment:
+      - CLICKHOUSE_SERVERS=http://clickhouse1:9012,http://clickhouse2:9022,http://clickhouse3:9032
+    depends_on:
+      - clickhouse1
+      - clickhouse2
+      - clickhouse3
 
-    zoo2:
-        image: zookeeper:latest
-        expose:
-            - "2181"
-            - "2888"
-            - "3888"
-        environment:
-            ZOO_MY_ID: "2"
-            ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=0.0.0.0:2888:3888;2181 server.3=zoo3:2888:3888;2181
-        networks:
-            - main
+  zoo1:
+    hostname: zoo1
+    image: zookeeper:latest
+    expose:
+      - "2181"
+      - "2888"
+      - "3888"
+    environment:
+      ZOO_MY_ID: "1"
+      ZOO_SERVERS: server.1=0.0.0.0:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
+    networks:
+      - main
 
-    zoo3:
-        image: zookeeper:latest
-        expose:
-            - "2181"
-            - "2888"
-            - "3888"
-        environment:
-            ZOO_MY_ID: "3"
-            ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=0.0.0.0:2888:3888;2181
-        networks:
-            - main
+  zoo2:
+    hostname: zoo2
+    image: zookeeper:latest
+    expose:
+      - "2181"
+      - "2888"
+      - "3888"
+    environment:
+      ZOO_MY_ID: "2"
+      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=0.0.0.0:2888:3888;2181 server.3=zoo3:2888:3888;2181
+    networks:
+      - main
 
-    clickhouse1:
-        image: yandex/clickhouse-server
-        expose:
-          #replica sync port
-          - "9010"
-          #client port
-          - "9000"
-        depends_on:
-          - zoo1
-          - zoo2
-          - zoo3
-        volumes:
-          - ./config_1.xml:/etc/clickhouse-server/config.xml
-        networks:
-            - main
+  zoo3:
+    hostname: zoo3
+    image: zookeeper:latest
+    expose:
+      - "2181"
+      - "2888"
+      - "3888"
+    environment:
+      ZOO_MY_ID: "3"
+      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=0.0.0.0:2888:3888;2181
+    networks:
+      - main
 
-    clickhouse2:
-        image: yandex/clickhouse-server
-        expose:
-          #replica sync port
-          - "9011"
-          #client port
-          - "9000"
-        depends_on:
-          - zoo1
-          - zoo2
-          - zoo3
-        volumes:
-          - ./config_2.xml:/etc/clickhouse-server/config.xml
-        networks:
-            - main
+  clickhouse1:
+    hostname: clickhouse1
+    image: yandex/clickhouse-server
+    ports:
+      # client tcp port
+      - "9010:9010"
+      # replica sync port
+      - "9011:9011"
+      # client http port
+      - "9012:9012"
+    depends_on:
+      - zoo1
+      - zoo2
+      - zoo3
+    volumes:
+      - ./config_1.xml:/etc/clickhouse-server/config.xml
+    networks:
+      - main
 
-    clickhouse3:
-        image: yandex/clickhouse-server
-        expose:
-          #replica sync port
-          - "9012"
-          #client port
-          - "9000"
-        depends_on:
-          - zoo1
-          - zoo2
-          - zoo3
-        volumes:
-          - ./config_3.xml:/etc/clickhouse-server/config.xml
-        networks:
-            - main
+  clickhouse2:
+    hostname: clickhouse2
+    image: yandex/clickhouse-server
+    ports:
+      # client tcp port
+      - "9020:9020"
+      # replica sync port
+      - "9021:9021"
+      # client http port
+      - "9022:9022"
+    depends_on:
+      - zoo1
+      - zoo2
+      - zoo3
+    volumes:
+      - ./config_2.xml:/etc/clickhouse-server/config.xml
+    networks:
+      - main
+
+  clickhouse3:
+    hostname: clickhouse3
+    image: yandex/clickhouse-server
+    ports:
+      # client tcp port
+      - "9030:9030"
+      # replica sync port
+      - "9031:9031"
+      # client http port
+      - "9032:9032"
+    depends_on:
+      - zoo1
+      - zoo2
+      - zoo3
+    volumes:
+      - ./config_3.xml:/etc/clickhouse-server/config.xml
+    networks:
+      - main
 

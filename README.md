@@ -1,45 +1,49 @@
-# Отличия от оригинального репо:
+## Orginal repo difference:
 
-Сделано три шарда по две реплики для того чтобы работать с [Distributed-таблицами](https://clickhouse.yandex/docs/en/operations/table_engines/distributed)
+There are three shard by one replicas to discover cluster with
+ [Distributed-tables](https://clickhouse.yandex/docs/en/operations/table_engines/distributed).
 
-### Просто пара полезных комманд чтобы посмотреть состояние кластера:
+## How to start
 
-- `clickhouse-client --host=127.0.0.1 --port=9001 --multiline`
-- `select * from system.clusters;`
+Install Docker Engine and Docker Compose.
 
-## Начало работы
+Call `docker-compose up -d --remove-orphans`.
 
-Установите Docker Engine и Docker Compose.
+In result you will have:
 
-Выполните `docker compose up -d`.
+* haproxy
+* [Bulk](https://github.com/nikepan/clickhouse-bulk)
+* 3 Zookeeper
+* 3 Clickhouse
 
-В результате будут подняты (в порядке запуска):
+Next connect to any clickhouse instance by `clickhouse-client --host=127.0.0.1 --port=9000 --multiline`
+ and create regular table at first:
+```
+CREATE TABLE IF NOT EXISTS default.test_real ON CLUSTER my_cluster (
+  date DateTime DEFAULT now(),
+  uuid String,
+  data String,
+)
+ENGINE = MergeTree()
+TTL date + INTERVAL 90 DAY
+PARTITION BY toYYYYMMDD(date)
+ORDER BY (uuid);
+```
 
-* Три Zookeeper
-* Три Clickhouse
-* HAProxy
+And distributed next:
+```
+CREATE TABLE IF NOT EXISTS default.test ON CLUSTER my_cluster AS default.test_real
+ENGINE = Distributed(my_cluster, default, test_real, halfMD5(uuid));
+```
 
-## Сеть
+## Explanation/Usage
 
-Все поднятые узлы смотрят во внутреннюю сеть Docker. Единственный выставляемый наружу порт -- 9001. Это порт для подключения к кластеру Clickhouse по протоколу clickhouse-client через HAProxy.
+So now you have two main ports:
 
-## Zookeeper
+- http port `8124` for inserting rows into `test_real`-table
+- tcp port `9000` for selecting rows from `test`-table
 
-Кластер Zookeeper толерантен к потере половины узлов (с округлением вниз). Clickhouse использует Zookeeper как сервис конфигураций (метаданные о хранящихся в Clickhouse данных, блокировки и т.д.). Zookeeper почти не требует настройки. Данные о доменах и портах серверов Clickhouse будут ему анонсированы самими серверами Clickhouse при запуске кластера.
+You may insert by single rows, `bulk` will automatically aggregate it and write bulk into instance
+ with round-robin sharding.
 
-## Clickhouse
-
-Кластер Clickhouse может потерять любое число узлов (кроме всех) и при этом сохранять работоспособность.
-
-Заметьте, что в случае поломки Zookeeper кластера (отказ больше половины узлов с округлением вверх) запросы `SELECT` будут выполняться всё-равно. А вот `INSERT` уже нет.
-
-Репликация асинхронная, мульти-мастер. И на запись и на чтение можно обращаться к любым из узлов кластера. Так как репликация асинхронная, то возможна потеря данных за краткий промежуток времени перед выходом из строя.
-
-При запросах `SELECT` Zookeeper не используется. Соответственно отказ кластера Zookeeper приведёт к отказу на запись, но не к отказу на чтение.
-
-## HAProxy
-
-Используется для балансирования нагрузки и обеспечения доступности. Распределение нагрузки производится по алгоритму round-robin. Healthcheck проверяется у порта протокола clickhouse-client (просто проверяется доступность TCP порта). В случае HTTP есть документированный Healthcheck -- GET на порт 8123 должен вернуть OK.
-
-HAProxy переадресовывает запросы на 9001 к одному из доступных узлов Clickhouse кластера, на порт 9000.
-
+Select query will be distribute on all cluster.
