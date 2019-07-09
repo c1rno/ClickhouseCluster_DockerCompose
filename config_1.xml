@@ -49,7 +49,7 @@
     <http_server_default_response><![CDATA[<html ng-app="SMI2"><head><base href="http://ui.tabix.io/"></head><body><div ui-view="" class="content-ui"></div><script src="http://loader.tabix.io/master.js"></script></body></html>]]></http_server_default_response>
     -->
 
-    <tcp_port>9010</tcp_port>
+    <tcp_port>9110</tcp_port>
 
     <!-- Port for communication between replicas. Used for data exchange. -->
     <interserver_http_port>9011</interserver_http_port>
@@ -127,7 +127,7 @@
                 <internal_replication>false</internal_replication>
                 <replica>
                     <host>clickhouse1</host>
-                    <port>9010</port>
+                    <port>9110</port>
                 </replica>
             </shard>
             <shard>
@@ -135,7 +135,7 @@
                 <internal_replication>false</internal_replication>
                 <replica>
                     <host>clickhouse2</host>
-                    <port>9020</port>
+                    <port>9120</port>
                 </replica>
             </shard>
             <shard>
@@ -143,7 +143,7 @@
                 <internal_replication>false</internal_replication>
                 <replica>
                     <host>clickhouse3</host>
-                    <port>9030</port>
+                    <port>9130</port>
                 </replica>
             </shard>
         </my_cluster>

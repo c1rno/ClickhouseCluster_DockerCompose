@@ -9,9 +9,9 @@ services:
     image: haproxy
     ports:
       # tcp client port
-      - "9000:9000"
+      - "9999:9000"
       # http client port
-      - "8000:8000"
+      - "8999:8000"
     volumes:
       - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
     networks:
@@ -25,7 +25,7 @@ services:
     hostname: bulk
     image: nikepan/clickhouse-bulk:1.0.11
     ports:
-      - "8124:8124"
+      - "8125:8124"
     networks:
       - main
     environment:
@@ -79,7 +79,7 @@ services:
     image: yandex/clickhouse-server
     ports:
       # client tcp port
-      - "9010:9010"
+      - "9110:9110"
       # replica sync port
       - "9011:9011"
       # client http port
@@ -98,7 +98,7 @@ services:
     image: yandex/clickhouse-server
     ports:
       # client tcp port
-      - "9020:9020"
+      - "9120:9120"
       # replica sync port
       - "9021:9021"
       # client http port
@@ -117,7 +117,7 @@ services:
     image: yandex/clickhouse-server
     ports:
       # client tcp port
-      - "9030:9030"
+      - "9130:9130"
       # replica sync port
       - "9031:9031"
       # client http port
